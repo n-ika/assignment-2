@@ -1,0 +1,29 @@
+---
+title: "Assignment 2"
+author: "Nika Jurov"
+date: "10/17/2018"
+output: html_document
+---
+# Exercise 1
+
+# Exercise 2
+
+## Task A
+
+## Task B
+
+## Task C
+
+## Task D
+
+## Task E
+
+## Task F
+
+## Task G
+
+## Task H
+
+# Exercise 3
+
+# Exercise 4
