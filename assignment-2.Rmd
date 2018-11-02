@@ -251,9 +251,8 @@ sample_A <- dplyr::sample_n(df_A, 5)
 sample_B <- dplyr::sample_n(df_B, 5)
 
 set.seed(NULL)
-
 t.test(df_A$value, df_B$value)
-t.test(sample_A$value, sample_B$value)
+t.test(sample_A$value,sample_B$value)
 
 ```
 
@@ -261,6 +260,39 @@ If we test two different data sets with a t.test, we test whether their differen
 
 If we take the 5 observation per group sample, we observe that `p-value = 0.2782`. This means that we cannot reject the null hypothesis that the difference in means between the two sampled data is zero. We can conclude that this sample was too small to detect the difference in means (which we know is true as we have generated the data with different means, even though they are close).
 
-#KONCAJ
+
+```{r}
+sample_a <- rnorm(5, 3, 2)
+sample_b <- rnorm(5, 4, 2)
+
+overall_mean <- mean(c(sample_a, sample_b))
+N_SAMPLES <- 9999
+statistics <- rep(NA, N_SAMPLES)
+for (i in 1:N_SAMPLES) {
+  sample_1_h0 <- rnorm(5, overall_mean, 2)
+  sample_2_h0 <- rnorm(5, overall_mean, 2)
+  v <- t.test(sample_1_h0, sample_2_h0)
+  statistics[i] <- v$statistic
+}
+hist(statistics, freq=FALSE, breaks=40)
+abline(v=t.test(sample_a, sample_b)$statistic)
+
+
+overall_mean1 <- mean(c(df_A$value, df_B$value))
+N_SAMPLES <- 9999
+statistics1 <- rep(NA, N_SAMPLES)
+for (i in 1:N_SAMPLES) {
+  df_A_h0 <- rnorm(50, overall_mean, 2)
+  df_B_h0 <- rnorm(50, overall_mean, 2)
+  v1 <- t.test(df_A_h0, df_B_h0)
+  statistics1[i] <- v1$statistic
+}
+hist(statistics1, freq=FALSE, breaks=80, xlim=c(-6,6))
+abline(v=t.test(df_A$value, df_B$value)$statistic)
+
+
+```
+
 
 # Exercise 4
+

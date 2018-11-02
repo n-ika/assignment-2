@@ -14,13 +14,18 @@ difference_in_means <- function(d, var, grouping_var, group1, group2) {
 
 
 
-permutation_twogroups <- function(d, var, grouping_var, group1, group2, statistic,
+permutation_twogroups <- function(d, 
+                                  var, grouping_var, 
+                                  group1, group2, 
+                                  statistic,
                                   n_samples=9999) {
   observed_statistic <- statistic(d, var, grouping_var, group1, group2)
   permutation_statistics <- rep(0, n_samples)
   for (i in 1:n_samples) {
     permuted_data <- randomize(d, var)
-    permutation_statistics[i] <- statistic(permuted_data, var, grouping_var, group1, group2)
+    permutation_statistics[i] <- statistic(permuted_data, 
+                                           var, grouping_var, 
+                                           group1, group2)
   }
   result <- list(observed=observed_statistic,
                  permuted=permutation_statistics)
