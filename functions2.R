@@ -31,3 +31,40 @@ permutation_twogroups <- function(d,
                  permuted=permutation_statistics)
   return(result)
 }
+
+
+
+
+estimate_statistical_power <- function(sample_size, obs_mean1, 
+                                       obs_mean2, st_dev) {
+  alpha <- 0.05
+  power_df <- NULL
+  df_sample1 <- data.frame("group" = "A", 
+                           "value" = rnorm(sample_size, obs_mean1, st_dev))
+  df_sample2 <- data.frame("group" = "B", 
+                           "value" = rnorm(sample_size, obs_mean2, st_dev))
+  df_sample_all <- rbind(df_sample1, df_sample2)
+  overall_mean <- mean(c(df_sample1$value, df_sample2$value))
+  for (values in df_sample_all$value) {
+    n_tests <- 1000
+    n_successes <- 0
+    for (i in 1:n_tests) {
+      # Simulate world NOT from null hypothesis
+      df_sample1_h0 <- rnorm(sample_size, overall_mean, st_dev)
+      df_sample2_h0 <- rnorm(sample_size, overall_mean, st_dev)
+      v <- t.test(df_sample1_h0, df_sample2_h0)
+      pval <- v$p.value
+      if (pval < alpha) {
+        n_successes <- n_successes + 1
+      }
+    }
+    power <- n_successes/n_tests
+    power_df_current <- tibble::data_frame(
+      power=power,
+      values=values,
+      alpha=alpha
+    )
+    power_df <- dplyr::bind_rows(power_df, power_df_current)
+  }
+  return(power_df)
+}

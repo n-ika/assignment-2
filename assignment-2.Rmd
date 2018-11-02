@@ -290,9 +290,40 @@ for (i in 1:N_SAMPLES) {
 hist(statistics1, freq=FALSE, breaks=80, xlim=c(-6,6))
 abline(v=t.test(df_A$value, df_B$value)$statistic)
 
-
 ```
 
 
 # Exercise 4
+
+```{r}
+
+sample_pair_50_3_4_2 <-
+  estimate_statistical_power(50, 3, 4, 2)
+  
+sample_pair_50_3_5_2 <-
+  estimate_statistical_power(50, 3, 5, 2)
+  
+sample_pair_5_3_4_2 <-
+  estimate_statistical_power(5, 3, 4, 2)
+  
+sample_pair_5_3_5_2 <-
+  estimate_statistical_power(5, 3, 5, 2)
+  
+sample_pair_50_3_4_6 <-
+  estimate_statistical_power(50, 3, 4, 6)
+  
+sample_pair_50_3_5_6 <-
+  estimate_statistical_power(50, 3, 5, 6)
+  
+sample_pair_5_3_4_6 <-
+  estimate_statistical_power(5, 3, 4, 6)
+  
+sample_pair_5_3_5_6 <-
+  estimate_statistical_power(5, 3, 5, 6)
+
+```
+
+#GGPLOT VSE
+#RAZLOZI
+
 
