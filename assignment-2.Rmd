@@ -4,26 +4,263 @@ author: "Nika Jurov"
 date: "10/17/2018"
 output: html_document
 ---
+
+```{r}
+`%>%` <- magrittr::`%>%`
+```
+
+
+```{r}
+source("functions2.R")
+```
+
+
 # Exercise 1
+
+```{r}
+iris_subset_1 <- iris[c(89:94, 108:112),]
+iris_subset_2 <- iris[88:114,]
+```
+
+
+``` {r, cache=T}
+
+permuted_sub1 <- permutation_twogroups(iris_subset_1, 
+                               "Sepal.Width", "Species", 
+                               "versicolor", "virginica", 
+                               difference_in_means)
+
+permuted_sub2 <- permutation_twogroups(iris_subset_2, 
+                                "Sepal.Width", "Species", 
+                                "versicolor", "virginica", 
+                                difference_in_means)
+
+
+perm_sub1_tibble <- tibble::as_tibble(permuted_sub1["permuted"])
+p <- ggplot2::ggplot(perm_sub1_tibble, ggplot2::aes(x=permuted)) +
+  ggplot2::geom_histogram(fill="darkblue", colour="black") +
+  ggplot2::xlim(-0.7, 0.7) +
+  ggplot2::ylim(0, 2200) +
+  ggplot2::labs(x = "Mean of permuted subset 1")
+p <- p + ggplot2::geom_vline(xintercept=permuted_sub1$observed)
+print(p)
+
+
+perm_sub2_tibble <- tibble::as_tibble(permuted_sub2["permuted"])
+p2 <- ggplot2::ggplot(perm_sub2_tibble, ggplot2::aes(x=permuted)) +
+  ggplot2::geom_histogram(fill="darkgreen", colour="black") +
+  ggplot2::xlim(-0.7, 0.7) +
+  ggplot2::ylim(0, 2200) +
+  ggplot2::labs(x = "Mean of permuted subset 2")
+p2 <- p2 + ggplot2::geom_vline(xintercept=permuted_sub2$observed)
+print(p2)
+
+```
+
+```{r}
+mean_diff_sub1 <- difference_in_means(iris_subset_1, 
+                                      "Sepal.Width", "Species", 
+                                      "versicolor", "virginica")
+
+mean_diff_sub2 <- difference_in_means(iris_subset_2, 
+                                      "Sepal.Width", "Species",
+                                      "versicolor","virginica")
+
+```
+
+The two different subsets are different:
+
+* `iris_subset_1` has 11 observations,  `iris_subset_2` has 27 and is thus almost three times of the size of the former. 
+* The values of mean differences for permuted data are scattered wider for `iris_subset_1` than for `iris_subset_2`.
+* `iris_subset_2` seems to belong more to a normal distribution than `iris_subset_1` .
+* The observed mean in `iris_subset_1` #DODAJ - TOLE NI OK - BERI
+
+```{r}
+t.test(permuted_sub1$permuted,alternative = "two.sided", mu=mean_diff_sub1)
+t.test(permuted_sub2$permuted,alternative = "two.sided", mu=mean_diff_sub2)
+```
+
 
 # Exercise 2
 
+```{r}
+devtools::install_github("ewan/stats_course", subdir="data/stress_shift")
+```
+
+
+
+
 ## Task A
+
+```{r}
+stress_shift_3dict <- dplyr::filter(stressshift::stress_shift_unamb, 
+                                    Dict == 'W1802' | 
+                                    Dict == 'J1917' | 
+                                    Dict == 'C1687')
+
+print(dplyr::count(stress_shift_3dict) == 451)
+```
+
 
 ## Task B
 
+```{r}
+stress_shift_3dict_using_pipe <- 
+  stressshift::stress_shift_unamb %>%
+  dplyr::filter(
+    Dict == 'W1802' | 
+    Dict == 'J1917' | 
+    Dict == 'C1687')
+  
+identical(stress_shift_3dict, stress_shift_3dict_using_pipe)
+```
+
+
 ## Task C
+
+```{r}
+stress_shift_3dict_nouns <- 
+  stress_shift_3dict %>%
+  dplyr::filter(Category == "Noun")
+  
+stress_shift_3dict_verbs <- 
+  stress_shift_3dict %>%
+  dplyr::filter(Category == "Verb")
+
+stress_shift_3dict_using_bind <-
+  dplyr::bind_rows(
+    stress_shift_3dict_nouns,
+    stress_shift_3dict_verbs)
+  
+stress_shift_3dict_using_bind_reversed <-
+  dplyr::bind_rows(
+    stress_shift_3dict_verbs,
+    stress_shift_3dict_nouns)
+
+identical(stress_shift_3dict, stress_shift_3dict_using_bind)
+identical(stress_shift_3dict, stress_shift_3dict_using_bind_reversed)
+```
+
+Why is one table identical to stress_shift_3dict and the other non-identical? If you were going to work with this data, would it matter which of the two combined tables you worked with? Why or why not?
+
+One table (in my code, `stress_shift_3dict_using_bind`) puts nouns first, so the *order* of values in rows is identical to `stress_shift_3dict`. The tables are the same in their values (nothing has changed but the order), because they have been concatenated differently. It depends what we do with this data, but I think in most cases the order does not matter. If we only take values out of them (meaning, we filter data by word category or by syllable etc.), the result will be the same. If we work with indices though, it matters, because each index corresponds to a row (in a hypothetical case where we do something with the table and indices, we need to know that the first half of the table is for example only verbs, so filtering by indices (unsure why one would do this but one can) from there will result in verbs only).
+
 
 ## Task D
 
+```{r}
+stress_shift_nouns_renamed <-
+  stressshift::stress_shift_unamb %>%
+  dplyr::filter(Category == "Noun") %>%
+  dplyr::select(Word,
+                Dict,
+                Syllable) %>%
+  dplyr::rename(Syllable_Noun = Syllable)
+
+
+stress_shift_verbs_renamed <-
+  stressshift::stress_shift_unamb %>%
+  dplyr::filter(Category == "Verb") %>%
+  dplyr::select(Word,
+                Dict,
+                Syllable) %>%
+  dplyr::rename(Syllable_Verb = Syllable)
+
+
+stress_shift_wide <-
+  dplyr::inner_join(
+    stress_shift_nouns_renamed,
+    stress_shift_verbs_renamed
+  )
+```
+
+The contents of `stress_shift_wide` are all the columns from both joined tables, but only the rows from `stress_shift_nouns_renamed` where they match the values in `stress_shift_verbs_renamed`. This means that the values that appear in both tables appear in the new table only if they match. Therefore, for example if there is verb present in a dictionary and the corresponding noun does not have this particular dictionary present not even once, the entry will be omitted.
+
+
 ## Task E
+
+```{r}
+library(RColorBrewer)
+ggplot2::ggplot(stressshift::stress_shift_unamb,
+                ggplot2::aes(x=Category, fill=Syllable)) +
+  ggplot2::geom_bar(position="dodge", colour="black") + 
+  ggplot2::scale_fill_brewer(palette="Set3")
+```
+
 
 ## Task F
 
+```{r}
+stress_shift_byword <-
+  stress_shift_wide %>%
+  dplyr::group_by(Word) %>%
+  dplyr::summarize(Noun_Percent_Syll_1 = 
+                     (sum(Syllable_Noun == "Syllable 1") /
+                         n()) * 100,
+                   Verb_Percent_Syll_1=
+                     (sum(Syllable_Verb == "Syllable 1") /
+                         n()) * 100)
+  
+  
+print(dplyr::count(stress_shift_byword) == 149)
+```
+
 ## Task G
+
+```{r}
+ggplot2::ggplot(stress_shift_byword, 
+                ggplot2::aes(
+                  x=Noun_Percent_Syll_1, 
+                  y=Verb_Percent_Syll_1)) +
+                ggplot2::geom_point() +
+                ggplot2::labs(x = "Percentage of stress on the noun",
+                              y = "Percentage of stress on the verb")
+```
 
 ## Task H
 
+```{r}
+stress_shift_full_join <-
+  dplyr::full_join(
+    stress_shift_nouns_renamed,
+    stress_shift_verbs_renamed
+  )
+
+stress_shift_byword_all <-
+  stress_shift_full_join %>%
+  dplyr::group_by(Word) %>%
+  dplyr::summarize(Noun_Percent_Syll_1 = 
+                     (sum(Syllable_Noun == "Syllable 1", na.rm=TRUE) /
+                         length(na.omit(Syllable_Noun)) * 100),
+                   Verb_Percent_Syll_1 =
+                     (sum(Syllable_Verb == "Syllable 1", na.rm=TRUE) /
+                         length(na.omit(Syllable_Verb)) * 100))
+
+```
+
+
 # Exercise 3
+
+```{r}
+set.seed(12)
+df_A <- data.frame("group" = "A", "value" = rnorm(50, 3, 2))
+df_B <- data.frame("group" = "B", "value" = rnorm(50, 4, 2))
+df <- rbind(df_A, df_B)
+
+sample_A <- dplyr::sample_n(df_A, 5)
+sample_B <- dplyr::sample_n(df_B, 5)
+
+set.seed(NULL)
+
+t.test(df_A$value, df_B$value)
+t.test(sample_A$value, sample_B$value)
+
+```
+
+If we test two different data sets with a t.test, we test whether their difference means is equal to 0 (this is the null hypothesis) or not. Since the p value here (`p-value = 0.01312`) is smaller than 0.05, we can safely conclude that the difference in means between group A and group B is not the same. This makes sense as we have generated normal distributions with to different means per each group.
+
+If we take the 5 observation per group sample, we observe that `p-value = 0.2782`. This means that we cannot reject the null hypothesis that the difference in means between the two sampled data is zero. We can conclude that this sample was too small to detect the difference in means (which we know is true as we have generated the data with different means, even though they are close).
+
+#KONCAJ
 
 # Exercise 4
