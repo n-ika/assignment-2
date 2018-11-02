@@ -1,8 +1,13 @@
+# The functions file.
+
+#####################################################################################
+
 randomize <- function(d, var) {
   d[[var]] <- sample(d[[var]])
   return(d)
 }
 
+#####################################################################################
 
 difference_in_means <- function(d, var, grouping_var, group1, group2) {
   d_1 <- dplyr::filter(d, get(grouping_var) == group1)
@@ -12,7 +17,7 @@ difference_in_means <- function(d, var, grouping_var, group1, group2) {
 }
 
 
-
+#####################################################################################
 
 permutation_twogroups <- function(d, 
                                   var, grouping_var, 
@@ -33,8 +38,24 @@ permutation_twogroups <- function(d,
 }
 
 
+#####################################################################################
 
 
+find_two_sided <- function(data, 
+                           mean_diff) {
+  permuted_values <- data$permuted
+  std <- sd(permuted_values)*sqrt((length(permuted_values)-1)/(length(permuted_values)))
+  permuted_mean <- mean(permuted_values)
+  z <- (mean_diff - permuted_mean) / std
+  
+  p_left <- pnorm(z)
+  p_right <- 1 - p_left
+  
+  two_sided <- 2*min(p_right,p_left)
+  return(two_sided)
+}
+
+#####################################################################################
 
 
 
@@ -43,6 +64,7 @@ estimate_statistical_power <- function(sample_sizes,
                                         st_devs) {
   alpha <- 0.05
   power_df <- NULL
+  set.seed(29)
   mean <- sample(c(3,4),1)
   for (sample_size in sample_sizes) {
     for (mean_diff in mean_diffs) {
